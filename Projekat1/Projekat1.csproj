@@ -41,6 +41,8 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="BadExtensionExcpetion.cs" />
+        <Compile Include="LogDir\Log.cs" />
+        <Compile Include="LogDir\LogUtils.cs" />
         <Compile Include="Models\File.cs" />
         <Compile Include="Program.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
