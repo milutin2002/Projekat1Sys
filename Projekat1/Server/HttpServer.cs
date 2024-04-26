@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using Projekat1.Cache;
 using Projekat1.LogDir;
 using Projekat1.Services;
 using FileInfo = Projekat1.Models.FileInfo;
@@ -15,6 +16,7 @@ namespace Projekat1.Server
         private HttpListener _listener;
         private Dictionary<string, List<FileInfo>> _dictionary;
         private Dictionary<string, Log> dictionaryLog = new Dictionary<string, Log>();
+        private CacheMemory cacheMemory = new CacheMemory();
         private byte[][] responses;
         public HttpServer(string prefix,Dictionary<string,List<FileInfo>>_dictionary)
         {
@@ -39,9 +41,10 @@ namespace Projekat1.Server
             var request = listenerContext.Request;
             var respone = listenerContext.Response;
             var url = request.Url.AbsolutePath;
-            var cacheLog = LogUtils.getLog(dictionaryLog, url);
+            var cacheLog = cacheMemory.getLog(url);
             if (cacheLog.Item1)
             {
+                Console.WriteLine("Koristi se vrednost iz hasha");
                 sendResponseWithoutSave(respone,cacheLog.Item2.statusCode,cacheLog.Item2.contentLength,cacheLog.Item2.content,cacheLog.Item2.contentType);
                 return;
             }
@@ -90,7 +93,7 @@ namespace Projekat1.Server
         private void sendResponse(HttpListenerResponse response, HttpStatusCode code, long length, byte[] bytes,string contentType,string url)
         {
             sendResponseWithoutSave(response,code,length,bytes,contentType);
-            LogUtils.writeResponse(dictionaryLog,url,new Log(code,length,contentType,bytes));
+            cacheMemory.writeResponse(url,new Log(code,length,contentType,bytes));
         }
     }
 }
