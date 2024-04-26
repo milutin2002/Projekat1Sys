@@ -40,6 +40,21 @@ namespace Projekat1.Cache
                     Console.WriteLine(e);
                 }
             }
+
+            Timer t = new Timer(removeResponse, url, TimeSpan.FromMinutes(5),
+                TimeSpan.FromMinutes(Timeout.InfiniteTimeSpan.Seconds));
+            
+        }
+
+        public void removeResponse(object url)
+        {
+            string key = (string)url;
+            Console.WriteLine(key);
+            Console.WriteLine("Tring to remove hash");
+            lock (locker)
+            {
+                dictionaryLog.Remove(key);
+            }
         }
     }
 }
