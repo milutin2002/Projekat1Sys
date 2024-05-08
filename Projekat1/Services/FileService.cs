@@ -18,39 +18,31 @@ namespace Projekat1.Services
             var directoryInfo = new DirectoryInfo(path);
             var files = directoryInfo.GetFiles("*", SearchOption.AllDirectories);
             //List<ManualResetEvent> events = new List<ManualResetEvent>();
-            //List<Thread> threads = new List<Thread>();
             foreach (var file in files)
             {
-                /*var resetEvent = new ManualResetEvent(false);
-                events.Add(resetEvent);
-                ThreadPool.QueueUserWorkItem((obj) =>
+                /*if (file.Name.EndsWith(".jpg") || file.Name.EndsWith(".png") || file.Name.EndsWith(".gif"))
                 {
-                    try
+                    var resetEvent = new ManualResetEvent(false);
+                    events.Add(resetEvent);
+                    ThreadPool.QueueUserWorkItem((obj) =>
                     {
-                        ProcesFileWithLock(dictionary, file);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                    finally
-                    {
-                        resetEvent.Set();
-                    }
-                });*/
+                        try
+                        {
+                            ProcesFileWithLock(dictionary, file);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        finally
+                        {
+                            resetEvent.Set();
+                        }
+                    });
+                }*/
                 ProcesFile(dictionary, file);
-                /*Thread t = new Thread(() =>
-                {
-                    ProcesFileWithLock(dictionary, file);
-                });
-                t.Start();
-                threads.Add(t);*/
             }
-
-            /*for (int i = 0; i < threads.Count; i++)
-            {
-                threads[i].Join();
-            }*/
+            
             /*for (int i = 0; i < events.Count; i++)
             {
                 events[i].WaitOne();
@@ -76,8 +68,6 @@ namespace Projekat1.Services
         }
         private static void ProcesFileWithLock(Dictionary<string, List<FileInfo>> dictionary, System.IO.FileInfo file)
         {
-            if (file.Name.EndsWith(".jpg") || file.Name.EndsWith(".png") || file.Name.EndsWith(".gif"))
-            {
                 List<FileInfo> list;
                 var fileName = file.Name.Substring(0,file.Name.Length - file.Extension.Length);
                 lock (dictionary)
@@ -91,37 +81,8 @@ namespace Projekat1.Services
 
                     list.Add(new FileInfo(fileName, file.DirectoryName, file.Extension));
                 }
-            }
         }
-        private static void ProcesFileWithSpinLock(Dictionary<string, List<FileInfo>> dictionary, System.IO.FileInfo file)
-        {
-            if (file.Name.EndsWith(".jpg") || file.Name.EndsWith(".png") || file.Name.EndsWith(".gif"))
-            {
-                List<FileInfo> list;
-                var fileName = file.Name.Substring(0,file.Name.Length - file.Extension.Length);
-                bool lockTaken = false;
-                try
-                {
-                    _spinLock.Enter(ref lockTaken);
-                    var ima = dictionary.TryGetValue(fileName, out list);
-                    if (!ima)
-                    {
-                        list = new List<FileInfo>();
-                        dictionary.Add(fileName, list);
-                    }
-
-                    list.Add(new FileInfo(fileName, file.DirectoryName, file.Extension));
-                }
-                finally
-                {
-                    if (lockTaken)
-                    {
-                        _spinLock.Exit();
-                    }
-                }
-                
-            }
-        }
+        
         
         public static FileInfo findFile(string name, string ext,Dictionary<string,List<FileInfo>>dictionary)
         {
