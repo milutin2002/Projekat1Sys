@@ -41,7 +41,7 @@ namespace Projekat1.Cache
                 }
             }
 
-            Timer t = new Timer(removeResponse, url, TimeSpan.FromMinutes(5),
+            Timer t = new Timer(removeResponse, url, TimeSpan.FromMinutes(1),
                 TimeSpan.FromMinutes(Timeout.InfiniteTimeSpan.Seconds));
             
         }
