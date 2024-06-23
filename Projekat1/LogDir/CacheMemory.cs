@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Projekat1.LogDir;
@@ -7,53 +8,59 @@ namespace Projekat1.Cache
 {
     public class CacheMemory
     {
-        private Dictionary<string, Log> dictionaryLog = new Dictionary<string, Log>();
+        private ConcurrentDictionary<string, Log> dictionaryLog = new ConcurrentDictionary<string, Log>();
         private static readonly object locker = new object();
+        private Timer t;
         public (bool, Log) getLog(string url)
         {
             bool ima=false;
             Log l = null;
-            lock (locker)
+            try
             {
-                try
-                {
-                    ima = dictionaryLog.TryGetValue(url, out l);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                ima = dictionaryLog.TryGetValue(url, out l);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             return (ima, l);
         }
 
+        public CacheMemory()
+        {
+            Console.WriteLine("Timer started");
+            t = new Timer(remove, null, 0, 60000);
+        }
         public void writeResponse(string url, Log l)
         {
-            lock (locker)
+            try
+            {
+                Console.WriteLine("Writing in cache");
+                dictionaryLog.TryAdd(url, l);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        private void remove(object data)
+        {
+            foreach (var key in dictionaryLog.Keys)
             {
                 try
                 {
-                    dictionaryLog.Add(url, l);
+                    if (dictionaryLog[key].expires < DateTime.Now)
+                    {
+                        Log l;
+                        Console.WriteLine("Brisanje iz cache");
+                        dictionaryLog.TryRemove(key, out l);
+                    }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
-            }
-
-            Timer t = new Timer(removeResponse, url, TimeSpan.FromMinutes(1),
-                TimeSpan.FromMinutes(Timeout.InfiniteTimeSpan.Seconds));
-            
-        }
-
-        public void removeResponse(object url)
-        {
-            string key = (string)url;
-            Console.WriteLine(key);
-            Console.WriteLine("Tring to remove hash");
-            lock (locker)
-            {
-                dictionaryLog.Remove(key);
             }
         }
     }

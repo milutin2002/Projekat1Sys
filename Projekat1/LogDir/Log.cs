@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 
 namespace Projekat1.LogDir
@@ -8,6 +9,7 @@ namespace Projekat1.LogDir
         public long contentLength { get;  }
         public string contentType { get;  }
         public byte[] content { get; }
+        public DateTime expires { get;  }
 
         public Log(HttpStatusCode statusCode, long contentLength, string contentType, byte[] content)
         {
@@ -15,6 +17,7 @@ namespace Projekat1.LogDir
             this.contentLength = contentLength;
             this.contentType = contentType;
             this.content = content;
+            expires=DateTime.Now+TimeSpan.FromMinutes(2);
         }
     }
 }

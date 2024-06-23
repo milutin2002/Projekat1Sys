@@ -18,7 +18,7 @@ namespace Projekat1.Server
         private Dictionary<string, Log> dictionaryLog = new Dictionary<string, Log>();
         private CacheMemory cacheMemory = new CacheMemory();
         private byte[][] responses;
-        public HttpServer(string prefix,Dictionary<string,List<FileInfo>>_dictionary)
+        public HttpServer(string prefix)
         {
             this._listener = new HttpListener();
             this._listener.Prefixes.Add(prefix);
@@ -59,7 +59,7 @@ namespace Projekat1.Server
                 var fileName = urlPath.Substring(0, urlPath.Length - ext.Length);
                 try
                 {
-                    var fileInfo = FileService.findFile(fileName, ext, _dictionary);
+                    var fileInfo = FileService.findFile(fileName, ext);
                     if (fileInfo == null)
                     {
                         sendResponse(respone,HttpStatusCode.NotFound,responses[1].Length,responses[1],"text/plain",url);
@@ -93,7 +93,10 @@ namespace Projekat1.Server
         private void sendResponse(HttpListenerResponse response, HttpStatusCode code, long length, byte[] bytes,string contentType,string url)
         {
             sendResponseWithoutSave(response,code,length,bytes,contentType);
-            cacheMemory.writeResponse(url,new Log(code,length,contentType,bytes));
+            if (code == HttpStatusCode.OK)
+            {
+                cacheMemory.writeResponse(url, new Log(code, length, contentType, bytes));
+            }
         }
     }
 }
